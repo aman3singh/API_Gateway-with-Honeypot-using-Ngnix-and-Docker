@@ -269,7 +269,7 @@ def get_sessions():
     """Admin endpoint to view active sessions"""
     # Convert sessions to a JSON-serializable format
     serializable_sessions = {}
-    for session_id, session_data in sessions.items():
+    for session_id, session_data in sessions.items()
         serializable_session = session_data.copy()
         serializable_session["requests"] = list(session_data["requests"])
         serializable_session["endpoints_accessed"] = list(session_data["endpoints_accessed"])

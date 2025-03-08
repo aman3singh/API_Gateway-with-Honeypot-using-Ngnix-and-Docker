@@ -5,7 +5,6 @@ services:
       - "8080:80"  # Map port 8080 on your Mac to port 80 in the container
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - nginx_logs:/var/log/nginx
     networks:
       - api-network
     depends_on:
@@ -33,14 +32,53 @@ services:
 
   # New services for logging and monitoring
   loki:
-    image: grafana/loki:2.6.1
-    ports:
-      - "3100:3100"
-    volumes:
-      - loki_data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - api-network
+  image: grafana/loki:2.6.1
+  ports:
+    - "3100:3100"
+  volumes:
+    - loki_data:/data
+  command: -config.file=/etc/loki/config.yaml
+  environment:
+    - LOKI_CONFIG_PATH=/etc/loki/config.yaml
+    - LOKI_DATA_DIR=/data
+  entrypoint: >
+    sh -c "mkdir -p /data && 
+           cat > /etc/loki/config.yaml << 'EOF'
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+      chunk_idle_period: 5m
+      chunk_retain_period: 30s
+    schema_config:
+      configs:
+        - from: 2020-05-15
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /data/index
+        cache_location: /data/cache
+        cache_ttl: 24h
+        shared_store: filesystem
+      filesystem:
+        directory: /data/chunks
+    limits_config:
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+    EOF
+    && /usr/bin/loki -config.file=/etc/loki/config.yaml"
+  networks:
+    - api-network
 
   promtail:
     image: grafana/promtail:2.6.1

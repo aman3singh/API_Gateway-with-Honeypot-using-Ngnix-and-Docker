@@ -25,26 +25,3 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Additional recommended ignores for this project
-# Loki data directory
-loki/data/
-
-# Grafana data
-grafana_data/
-
-# Docker volumes
-volumes/
-
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Virtual environment
-venv/
-env/
-.venv/
-
-# pytest cache
-.pytest_cache/
