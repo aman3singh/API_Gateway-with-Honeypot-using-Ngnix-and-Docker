@@ -47,4 +47,6 @@ env/
 .venv/
 
 # pytest cache
-.pytest_cache/
+.pytest_cache/.history/
+
+.history/
